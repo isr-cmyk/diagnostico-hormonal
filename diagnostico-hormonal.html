@@ -1,0 +1,1055 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Diagnóstico Hormonal — GORO PRG</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    /* ── RESET & TOKENS ── */
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --green:        #3EE87A;
+      --green-dim:    rgba(62, 232, 122, 0.10);
+      --green-border: rgba(62, 232, 122, 0.22);
+      --bg:           #0D0D0D;
+      --card:         #161616;
+      --border:       #222222;
+      --text:         #FFFFFF;
+      --muted:        #CCCCCC;
+      --subtle:       #666666;
+      --radius:       12px;
+    }
+
+    html, body {
+      min-height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .app { min-height: 100vh; display: flex; flex-direction: column; }
+
+    /* ── HEADER ── */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 24px;
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      background: var(--bg);
+      z-index: 100;
+    }
+
+    .brand { display: flex; flex-direction: column; line-height: 1.2; }
+    .brand-name { font-size: 15px; font-weight: 900; color: var(--green); letter-spacing: .5px; }
+    .brand-url  { font-size: 11px; color: var(--subtle); }
+    .header-tag { font-size: 11px; color: var(--subtle); letter-spacing: .5px; }
+
+    /* ── PROGRESS ── */
+    .progress-wrap {
+      height: 3px;
+      background: var(--border);
+      position: sticky;
+      top: 57px;
+      z-index: 99;
+      display: none;
+    }
+    .progress-bar {
+      height: 100%;
+      background: var(--green);
+      transition: width 0.4s cubic-bezier(.4,0,.2,1);
+      border-radius: 0 2px 2px 0;
+    }
+
+    /* ── SCREENS ── */
+    .screen { display: none; flex: 1; }
+    .screen.active { display: flex; flex-direction: column; animation: fadeUp .3s ease; }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── SHARED CONTAINER ── */
+    .container { width: 100%; max-width: 600px; margin: 0 auto; padding: 0 20px; }
+
+    /* ── BUTTON ── */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--green);
+      color: #000;
+      font-family: inherit;
+      font-size: 15px;
+      font-weight: 800;
+      padding: 14px 32px;
+      border: none;
+      border-radius: var(--radius);
+      cursor: pointer;
+      letter-spacing: .2px;
+      transition: transform .15s, box-shadow .15s, opacity .15s;
+      text-decoration: none;
+    }
+    .btn:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(62,232,122,.3); }
+    .btn:active { transform: none; }
+    .btn:disabled { opacity: .35; cursor: not-allowed; transform: none; box-shadow: none; }
+
+    /* ══════════════════════════════
+       SCREEN 1 — INTRO
+    ══════════════════════════════ */
+    #screen-intro {
+      align-items: center;
+      justify-content: center;
+      padding: 60px 20px;
+      text-align: center;
+    }
+
+    .intro-tag {
+      display: inline-block;
+      background: var(--green-dim);
+      color: var(--green);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      padding: 5px 14px;
+      border-radius: 20px;
+      border: 1px solid var(--green-border);
+      margin-bottom: 28px;
+    }
+
+    .intro-title {
+      font-size: clamp(26px, 5vw, 42px);
+      font-weight: 900;
+      line-height: 1.1;
+      letter-spacing: -1.5px;
+      margin-bottom: 14px;
+    }
+    .intro-title .accent { color: var(--green); }
+
+    .intro-subtitle { font-size: 16px; color: var(--muted); margin-bottom: 12px; }
+
+    .intro-desc {
+      font-size: 14px;
+      color: var(--subtle);
+      max-width: 460px;
+      margin: 0 auto 40px;
+      line-height: 1.7;
+    }
+
+    .intro-stats { display: flex; justify-content: center; gap: 36px; margin-bottom: 44px; }
+    .stat { display: flex; flex-direction: column; align-items: center; gap: 3px; }
+    .stat-num { font-size: 26px; font-weight: 900; color: var(--green); }
+    .stat-lbl { font-size: 11px; color: var(--subtle); text-transform: uppercase; letter-spacing: .5px; }
+
+    /* ══════════════════════════════
+       SCREEN 2 — QUESTIONS
+    ══════════════════════════════ */
+    #screen-questions { padding: 36px 20px 60px; }
+
+    .q-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 26px;
+    }
+    .q-counter { font-size: 13px; color: var(--subtle); font-weight: 600; }
+    .q-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--green);
+      background: var(--green-dim);
+      padding: 4px 10px;
+      border-radius: 20px;
+      border: 1px solid var(--green-border);
+    }
+
+    .q-text {
+      font-size: clamp(17px, 2.8vw, 21px);
+      font-weight: 800;
+      line-height: 1.35;
+      margin-bottom: 24px;
+      letter-spacing: -.3px;
+    }
+
+    /* Options */
+    .options { display: flex; flex-direction: column; gap: 9px; margin-bottom: 32px; }
+
+    .option {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      background: var(--card);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      padding: 15px 17px;
+      cursor: pointer;
+      transition: border-color .2s, background .2s, transform .15s;
+      user-select: none;
+    }
+    .option:hover { border-color: #444; transform: translateX(2px); }
+    .option.selected { border-color: var(--green); background: var(--green-dim); }
+
+    .opt-dot {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      border: 2px solid var(--border);
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: border-color .2s, background .2s;
+    }
+    .option.selected .opt-dot { border-color: var(--green); background: var(--green); }
+    .option.selected .opt-dot::after {
+      content: '';
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #000;
+    }
+
+    .opt-text { font-size: 14px; color: var(--muted); line-height: 1.4; flex: 1; }
+    .option.selected .opt-text { color: var(--text); font-weight: 500; }
+
+    .q-actions { display: flex; justify-content: flex-end; }
+
+    /* ══════════════════════════════
+       SCREEN 3 — RESULTS
+    ══════════════════════════════ */
+    #screen-results { padding: 40px 20px 80px; }
+
+    /* Score */
+    .result-label {
+      text-align: center;
+      font-size: 12px;
+      color: var(--subtle);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      font-weight: 600;
+      margin-bottom: 22px;
+    }
+
+    .score-circle {
+      width: 180px;
+      height: 180px;
+      border-radius: 50%;
+      border: 2px solid var(--border);
+      background: var(--card);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 22px;
+      position: relative;
+    }
+    .score-circle::after {
+      content: '';
+      position: absolute;
+      inset: -2px;
+      border-radius: 50%;
+      border: 2px solid transparent;
+      border-top-color: var(--green);
+      border-right-color: var(--green);
+      animation: arcSpin .9s ease-out forwards;
+    }
+    @keyframes arcSpin {
+      from { transform: rotate(-90deg); opacity: 0; }
+      to   { transform: rotate(270deg); opacity: 1; }
+    }
+
+    .score-pct   { font-size: 52px; font-weight: 900; color: var(--green); line-height: 1; letter-spacing: -2px; }
+    .score-sym   { font-size: 24px; font-weight: 700; color: var(--green); }
+    .score-sub   { font-size: 11px; color: var(--subtle); margin-top: 4px; }
+
+    .result-headline {
+      text-align: center;
+      font-size: clamp(18px, 3.5vw, 24px);
+      font-weight: 900;
+      letter-spacing: -.5px;
+      margin-bottom: 6px;
+    }
+    .result-headline .accent { color: var(--green); }
+    .result-tagline { text-align: center; font-size: 14px; color: var(--subtle); }
+
+    /* Divider */
+    .divider {
+      height: 1px;
+      background: linear-gradient(to right, transparent, var(--green), transparent);
+      margin: 32px 0;
+      opacity: .35;
+    }
+
+    /* Hours lost card */
+    .hours-card {
+      background: var(--card);
+      border: 1px solid var(--green-border);
+      border-radius: var(--radius);
+      padding: 24px;
+      margin-bottom: 8px;
+      animation: fadeUp .4s ease .05s both;
+    }
+    .hours-title {
+      font-size: 15px;
+      font-weight: 800;
+      color: var(--text);
+      margin-bottom: 20px;
+    }
+    .hours-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+    .hours-metric { text-align: center; }
+    .hours-num {
+      font-size: 32px;
+      font-weight: 900;
+      color: var(--green);
+      line-height: 1;
+      letter-spacing: -1px;
+    }
+    .hours-unit {
+      font-size: 12px;
+      color: var(--green);
+      font-weight: 600;
+      margin-bottom: 3px;
+    }
+    .hours-label { font-size: 11px; color: var(--subtle); }
+    .hours-sep { height: 1px; background: var(--border); margin-bottom: 14px; }
+    .hours-reflection { font-size: 13px; color: var(--subtle); line-height: 1.65; }
+    .hours-reflection strong { color: var(--muted); }
+
+    /* Problems */
+    .problems-heading {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--subtle);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 14px;
+    }
+    .problems-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 36px; }
+
+    .problem-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px;
+      animation: fadeUp .4s ease both;
+    }
+    .problem-card:nth-child(1) { animation-delay: .1s; }
+    .problem-card:nth-child(2) { animation-delay: .2s; }
+    .problem-card:nth-child(3) { animation-delay: .3s; }
+    .problem-card.critical  { border-left: 3px solid #FF4A4A; }
+    .problem-card.improvable { border-left: 3px solid #FF9944; }
+
+    .problem-head { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+    .problem-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+      flex-shrink: 0;
+    }
+    .problem-card.critical  .problem-icon { background: rgba(255,74,74,.1); }
+    .problem-card.improvable .problem-icon { background: rgba(255,153,68,.1); }
+
+    .problem-name { font-size: 13px; font-weight: 800; flex: 1; }
+    .problem-badge {
+      font-size: 9px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 10px;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+    }
+    .badge-critical  { background: rgba(255,74,74,.14);  color: #FF7070; }
+    .badge-improvable { background: rgba(255,153,68,.14); color: #FF9944; }
+    .problem-text { font-size: 13.5px; color: #AAAAAA; line-height: 1.65; }
+
+    /* CTA */
+    .cta-block {
+      background: #0F1F17;
+      border: 1px solid rgba(62, 232, 122, 0.4);
+      border-radius: var(--radius);
+      padding: 36px 28px;
+      text-align: center;
+      box-shadow: 0 0 40px rgba(62, 232, 122, 0.06);
+    }
+    .cta-eyebrow {
+      display: inline-block;
+      background: rgba(62,232,122,.15);
+      color: var(--green);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      padding: 5px 14px;
+      border-radius: 20px;
+      border: 1px solid var(--green-border);
+      margin-bottom: 16px;
+    }
+    .cta-title {
+      font-size: clamp(20px, 3.5vw, 26px);
+      font-weight: 900;
+      margin-bottom: 12px;
+      letter-spacing: -.5px;
+      line-height: 1.2;
+    }
+    .cta-sub {
+      font-size: 13.5px;
+      color: var(--subtle);
+      margin-bottom: 28px;
+      line-height: 1.7;
+      max-width: 500px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .btn-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--green);
+      color: #000;
+      font-family: inherit;
+      font-size: 16px;
+      font-weight: 900;
+      padding: 17px 38px;
+      border: none;
+      border-radius: var(--radius);
+      cursor: pointer;
+      text-decoration: none;
+      letter-spacing: .2px;
+      transition: transform .15s, box-shadow .15s;
+      animation: ctaPulse 2.5s ease-in-out infinite;
+    }
+    @keyframes ctaPulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(62,232,122,0); }
+      50%       { box-shadow: 0 0 0 10px rgba(62,232,122,0.12); }
+    }
+    .btn-cta:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 36px rgba(62,232,122,.45) !important;
+      animation: none;
+    }
+    .cta-note { font-size: 11px; color: var(--subtle); margin-top: 14px; letter-spacing: .3px; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 480px) {
+      .header { padding: 14px 16px; }
+      #screen-intro { padding: 36px 16px; }
+      #screen-questions { padding: 24px 16px 50px; }
+      #screen-results { padding: 28px 16px 60px; }
+      .intro-stats { gap: 20px; }
+      .score-circle { width: 160px; height: 160px; }
+      .score-pct { font-size: 44px; }
+      .hours-num { font-size: 26px; }
+      .cta-block { padding: 22px 18px; }
+    }
+  </style>
+</head>
+<body>
+<div class="app">
+
+  <!-- HEADER -->
+  <header class="header">
+    <div class="brand">
+      <span class="brand-name">GORO PRG</span>
+      <span class="brand-url">goroprg.com</span>
+    </div>
+    <span class="header-tag" id="header-tag">Diagnóstico gratuito</span>
+  </header>
+
+  <!-- PROGRESS BAR -->
+  <div class="progress-wrap" id="progress-wrap">
+    <div class="progress-bar" id="progress-bar" style="width:0%"></div>
+  </div>
+
+  <!-- ══════════════════════════════
+       SCREEN 1 — INTRO
+  ══════════════════════════════ -->
+  <div class="screen active" id="screen-intro">
+    <div style="max-width:560px;margin:0 auto;padding:0 20px;text-align:center;">
+      <div class="intro-tag">Test de diagnóstico hormonal</div>
+      <h1 class="intro-title">
+        Descubre a qué&nbsp;% está<br>
+        operando <span class="accent">tu cuerpo</span>
+      </h1>
+      <p class="intro-subtitle">Test de diagnóstico hormonal — 3 minutos</p>
+      <p class="intro-desc">
+        Responde con honestidad. No hay respuestas correctas.
+        El sistema analiza tus hábitos actuales y detecta exactamente
+        qué está limitando tu energía, foco y rendimiento.
+      </p>
+      <div class="intro-stats">
+        <div class="stat"><span class="stat-num">17</span><span class="stat-lbl">Preguntas</span></div>
+        <div class="stat"><span class="stat-num">4</span><span class="stat-lbl">Bloques</span></div>
+        <div class="stat"><span class="stat-num">3'</span><span class="stat-lbl">Duración</span></div>
+      </div>
+      <button class="btn" onclick="startTest()">Comenzar diagnóstico →</button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════
+       SCREEN 2 — QUESTIONS
+  ══════════════════════════════ -->
+  <div class="screen" id="screen-questions">
+    <div class="container">
+      <div class="q-meta">
+        <span class="q-counter" id="q-counter">Pregunta 1 de 17</span>
+        <span class="q-badge" id="q-badge">⚡ Energía</span>
+      </div>
+      <h2 class="q-text" id="q-text"></h2>
+      <div class="options" id="options"></div>
+      <div class="q-actions">
+        <button class="btn" id="btn-next" onclick="nextQuestion()" disabled>Siguiente →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════
+       SCREEN 3 — RESULTS
+  ══════════════════════════════ -->
+  <div class="screen" id="screen-results">
+    <div class="container">
+
+      <!-- Score -->
+      <p class="result-label">Tu diagnóstico hormonal</p>
+      <div class="score-circle">
+        <div><span class="score-pct" id="r-pct">—</span><span class="score-sym">%</span></div>
+        <span class="score-sub">de tu potencial real</span>
+      </div>
+      <h2 class="result-headline">
+        Operas al <span class="accent" id="r-headline">—</span>%
+      </h2>
+      <p class="result-tagline">De tu potencial de rendimiento real</p>
+
+      <div class="divider"></div>
+
+      <!-- Hours lost -->
+      <div class="hours-card">
+        <p class="hours-title">Lo que te está costando cada día</p>
+        <div class="hours-grid">
+          <div class="hours-metric">
+            <div class="hours-num" id="h-day">—</div>
+            <div class="hours-unit">horas</div>
+            <div class="hours-label">al día</div>
+          </div>
+          <div class="hours-metric">
+            <div class="hours-num" id="h-week">—</div>
+            <div class="hours-unit">horas</div>
+            <div class="hours-label">a la semana</div>
+          </div>
+          <div class="hours-metric">
+            <div class="hours-num" id="h-month">—</div>
+            <div class="hours-unit">horas</div>
+            <div class="hours-label">al mes</div>
+          </div>
+        </div>
+        <div class="hours-sep"></div>
+        <p class="hours-reflection" id="h-reflection"></p>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- Problems -->
+      <p class="problems-heading">Tus 3 principales bloqueos detectados</p>
+      <div class="problems-list" id="problems-list"></div>
+
+      <div class="divider"></div>
+
+      <!-- CTA -->
+      <div class="cta-block">
+        <div class="cta-eyebrow">Siguiente paso</div>
+        <h3 class="cta-title">¿Quieres saber exactamente<br>cómo solucionarlo?</h3>
+        <p class="cta-sub">
+          En 30 minutos identificamos qué está bloqueando tu rendimiento y si te podemos ayudar
+          te explicamos cómo lo solucionaríamos con nuestro servicio. En el caso de que no te
+          podamos ayudar, te diremos qué haríamos en tu caso para que de todas maneras salgas
+          de la llamada con mucha más claridad de como entraste.
+        </p>
+        <a class="btn-cta"
+           href="https://links.goroprg.com/widget/booking/08g1x2nF4CCm3tJLCFVN"
+           target="_blank"
+           rel="noopener">
+          Agenda tu llamada estratégica →
+        </a>
+        <p class="cta-note">Sin compromiso · Llamada gratuita · 30 minutos</p>
+      </div>
+
+    </div>
+  </div>
+
+</div><!-- /app -->
+
+<script>
+/* ══════════════════════════════════════════════════════════
+   DATA
+══════════════════════════════════════════════════════════ */
+
+const BLOCKS = [
+  { id: 0, name: 'Energía',       icon: '⚡' },
+  { id: 1, name: 'Nutrición',     icon: '🥗' },
+  { id: 2, name: 'Descanso',      icon: '😴' },
+  { id: 3, name: 'Entrenamiento', icon: '💪' },
+];
+
+// Tiebreaker: lower index = higher priority when scores tied
+// descanso (2) > energía (0) > nutrición (1) > entrenamiento (3)
+const TIEBREAKER = [2, 0, 1, 3];
+
+/*
+  Each entry is either a normal scored question or the context question.
+  isContext: true  → options have `hours` value (not scored, stored separately)
+  block: null      → context question (no block badge shown, use generic badge)
+*/
+const QUESTIONS = [
+  // ── P1: Energy level ──
+  {
+    block: 0,
+    text: '¿Cómo describirías tu nivel de energía a lo largo del día?',
+    options: [
+      { text: 'Tengo bajones constantes y dependo del café para funcionar', value: 0 },
+      { text: 'Tengo energía por la mañana pero caigo en la tarde',         value: 1 },
+      { text: 'Mi energía es bastante estable aunque con algún bajón',       value: 2 },
+      { text: 'Tengo energía constante durante todo el día',                 value: 3 },
+    ],
+  },
+
+  // ── PC: Context — work hours (appears 2nd, not scored) ──
+  {
+    block: null,
+    isContext: true,
+    text: '¿Cuántas horas trabajas al día de media?',
+    options: [
+      { text: 'Menos de 4 horas',     hours: 3  },
+      { text: 'Entre 4 y 6 horas',    hours: 5  },
+      { text: 'Entre 6 y 8 horas',    hours: 7  },
+      { text: 'Entre 8 y 10 horas',   hours: 9  },
+      { text: 'Más de 10 horas',      hours: 11 },
+    ],
+  },
+
+  // ── P2–P4: Energy cont. ──
+  {
+    block: 0,
+    text: '¿Cuántos cafés o bebidas con cafeína tomas al día?',
+    options: [
+      { text: 'Más de 4',    value: 0 },
+      { text: '3 o 4',       value: 1 },
+      { text: '2',           value: 2 },
+      { text: '1 o ninguno', value: 3 },
+    ],
+  },
+  {
+    block: 0,
+    text: '¿A qué hora tomas tu primer café?',
+    options: [
+      { text: 'Nada más despertar',                              value: 0 },
+      { text: 'En los primeros 30 minutos',                      value: 1 },
+      { text: 'Entre 30 y 60 minutos después de despertar',      value: 2 },
+      { text: 'Más de 60-90 minutos después de despertar',       value: 3 },
+    ],
+  },
+  {
+    block: 0,
+    text: '¿Consumes bebidas energéticas con regularidad?',
+    options: [
+      { text: 'Sí, casi todos los días',  value: 0 },
+      { text: 'Varios días a la semana',  value: 1 },
+      { text: 'De forma ocasional',       value: 2 },
+      { text: 'Nunca o casi nunca',       value: 3 },
+    ],
+  },
+
+  // ── P5–P8: Nutrition ──
+  {
+    block: 1,
+    text: '¿Cómo estructuras tus comidas habitualmente?',
+    options: [
+      { text: 'Como lo que encuentro sin mucho orden',                                                     value: 0 },
+      { text: 'Intento comer bien pero sin estructura clara',                                              value: 1 },
+      { text: 'Tengo cierta estructura aunque no siempre la sigo',                                        value: 2 },
+      { text: 'Tengo un sistema de comidas con proteína, carbohidrato complejo y grasa en cada ingesta',  value: 3 },
+    ],
+  },
+  {
+    block: 1,
+    text: '¿Con qué frecuencia consumes ultraprocesados, bollería o comida rápida?',
+    options: [
+      { text: 'Casi todos los días',      value: 0 },
+      { text: 'Varias veces por semana',  value: 1 },
+      { text: 'De forma ocasional',       value: 2 },
+      { text: 'Raramente o nunca',        value: 3 },
+    ],
+  },
+  {
+    block: 1,
+    text: '¿Cómo es tu desayuno habitual?',
+    options: [
+      { text: 'Me lo salto o tomo solo café',                     value: 0 },
+      { text: 'Tostadas, cereales o algo dulce',                  value: 1 },
+      { text: 'Algo rápido sin mucho criterio nutricional',       value: 2 },
+      { text: 'Proteína + grasa + carbohidrato complejo',         value: 3 },
+    ],
+  },
+  {
+    block: 1,
+    text: '¿Con qué frecuencia consumes alcohol?',
+    options: [
+      { text: 'Casi todos los días',          value: 0 },
+      { text: '3 o más veces por semana',     value: 1 },
+      { text: '1 o 2 veces por semana',       value: 2 },
+      { text: 'Ocasionalmente o nunca',       value: 3 },
+    ],
+  },
+
+  // ── P9–P12: Rest ──
+  {
+    block: 2,
+    text: '¿Cómo te sientes al despertar habitualmente?',
+    options: [
+      { text: 'Destrozado, necesito tiempo para arrancar',       value: 0 },
+      { text: 'Cansado pero me pongo en marcha',                 value: 1 },
+      { text: 'Bastante bien aunque tardo en activarme',         value: 2 },
+      { text: 'Descansado y con energía desde el principio',     value: 3 },
+    ],
+  },
+  {
+    block: 2,
+    text: '¿Cuántas horas duermes de media?',
+    options: [
+      { text: 'Menos de 5 horas',      value: 0 },
+      { text: 'Entre 5 y 6 horas',     value: 1 },
+      { text: 'Entre 6 y 7 horas',     value: 2 },
+      { text: '7 horas o más',         value: 3 },
+    ],
+  },
+  {
+    block: 2,
+    text: '¿Qué haces habitualmente en la hora antes de dormir?',
+    options: [
+      { text: 'Móvil, series o trabajo hasta que me duermo',     value: 0 },
+      { text: 'Pantallas pero intento parar un poco antes',      value: 1 },
+      { text: 'Reduzco pantallas pero no tengo rutina fija',     value: 2 },
+      { text: 'Tengo una rutina de desconexión sin pantallas',   value: 3 },
+    ],
+  },
+  {
+    block: 2,
+    text: '¿Tienes un horario de sueño consistente?',
+    options: [
+      { text: 'Me acuesto y me levanto a horas muy distintas cada día',          value: 0 },
+      { text: 'Hay cierta regularidad pero varía bastante',                      value: 1 },
+      { text: 'Bastante consistente aunque los fines de semana cambia',          value: 2 },
+      { text: 'Mismo horario todos los días incluidos fines de semana',          value: 3 },
+    ],
+  },
+
+  // ── P13–P16: Training ──
+  {
+    block: 3,
+    text: '¿Con qué frecuencia entrenas?',
+    options: [
+      { text: 'No entreno',                                               value: 0 },
+      { text: '1 vez por semana o menos',                                 value: 1 },
+      { text: '2 o 3 veces por semana',                                   value: 2 },
+      { text: '3 o más veces por semana con plan estructurado',           value: 3 },
+    ],
+  },
+  {
+    block: 3,
+    text: '¿Qué tipo de entrenamiento haces principalmente?',
+    options: [
+      { text: 'No hago nada',                          value: 0 },
+      { text: 'Cardio principalmente',                 value: 1 },
+      { text: 'Mezcla sin mucho criterio',             value: 2 },
+      { text: 'Entrenamiento de fuerza con progresión', value: 3 },
+    ],
+  },
+  {
+    block: 3,
+    text: '¿Cuánto tiempo pasas sentado de forma continua durante el día?',
+    options: [
+      { text: 'Más de 8 horas sin levantarme apenas',         value: 0 },
+      { text: 'Entre 6 y 8 horas con alguna pausa',           value: 1 },
+      { text: 'Me muevo con cierta frecuencia',               value: 2 },
+      { text: 'Hago pausas activas cada 60-90 minutos',       value: 3 },
+    ],
+  },
+  {
+    block: 3,
+    text: '¿Cómo describes tu nivel de estrés habitual?',
+    options: [
+      { text: 'Estrés muy alto de forma constante',                  value: 0 },
+      { text: 'Estrés elevado la mayoría de los días',               value: 1 },
+      { text: 'Estrés moderado con algunos días difíciles',          value: 2 },
+      { text: 'Estrés manejable y bajo control',                     value: 3 },
+    ],
+  },
+];
+
+// Problem texts by block id and severity
+const PROBLEM_TEXT = {
+  0: {
+    critical:   'Tu sistema de energía está completamente apoyado en estimulantes externos. Cuando la cafeína falla, el cuerpo no tiene base propia para sostener el rendimiento. Eso indica una desregulación del eje cortisol-dopamina que ningún café va a solucionar.',
+    improvable: 'Tu energía tiene picos y valles predecibles que te están costando horas de rendimiento real. La dependencia parcial de la cafeína sugiere que el sistema hormonal no está produciendo energía de base con suficiente consistencia.',
+  },
+  1: {
+    critical:   'Tu alimentación actual está generando un entorno hormonal que trabaja en tu contra. Picos de glucosa, déficits de micronutrientes clave y una señal inflamatoria de fondo que afecta directamente a tu foco, tu recuperación y tu composición corporal.',
+    improvable: 'Hay patrones nutricionales que están limitando tu rendimiento de forma silenciosa. No es un problema grave, pero sin corregirlos estás dejando energía y foco sobre la mesa cada día.',
+  },
+  2: {
+    critical:   'Tu recuperación nocturna está severamente comprometida. Las horas que duermes no se están traduciendo en descanso real. Eso significa que cada día empiezas con el sistema nervioso en deuda — y eso no lo compensa ningún otro hábito.',
+    improvable: 'Tu sueño tiene calidad inconsistente. Hay noches de buena recuperación y noches que te dejan a medio gas. Sin corregir los patrones que lo causan, el rendimiento va a seguir siendo impredecible.',
+  },
+  3: {
+    critical:   'La combinación de sedentarismo y falta de estímulo físico estructurado está deteriorando tu sensibilidad a la insulina, bajando tu testosterona natural y cronificando el cortisol. El cuerpo sin movimiento no regula bien ninguna otra variable.',
+    improvable: 'Tu actividad física actual no está generando el estímulo hormonal suficiente. Falta progresión, estructura o frecuencia para que el entrenamiento impacte de verdad en tu energía y composición corporal.',
+  },
+};
+
+/* ══════════════════════════════════════════════════════════
+   STATE
+══════════════════════════════════════════════════════════ */
+
+let currentQ  = 0;
+let answers   = new Array(QUESTIONS.length).fill(null); // scored value or hours value
+let workHours = 7; // default if context question somehow skipped
+
+/* ══════════════════════════════════════════════════════════
+   NAVIGATION
+══════════════════════════════════════════════════════════ */
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function startTest() {
+  currentQ = 0;
+  answers.fill(null);
+  workHours = 7;
+  showScreen('screen-questions');
+  document.getElementById('progress-wrap').style.display = 'block';
+  document.getElementById('header-tag').textContent = 'Diagnóstico en curso';
+  renderQuestion();
+}
+
+/* ══════════════════════════════════════════════════════════
+   QUESTION RENDERING
+══════════════════════════════════════════════════════════ */
+
+function renderQuestion() {
+  const q     = QUESTIONS[currentQ];
+  const total = QUESTIONS.length; // 17
+
+  // Counter
+  document.getElementById('q-counter').textContent = `Pregunta ${currentQ + 1} de ${total}`;
+
+  // Block badge
+  const badge = document.getElementById('q-badge');
+  if (q.isContext) {
+    badge.textContent = '📊 Contexto';
+  } else {
+    const blk = BLOCKS[q.block];
+    badge.textContent = `${blk.icon} ${blk.name}`;
+  }
+
+  // Question text
+  document.getElementById('q-text').textContent = q.text;
+
+  // Options
+  const container = document.getElementById('options');
+  container.innerHTML = '';
+
+  q.options.forEach((opt, i) => {
+    // Determine if this option was previously selected
+    let isSelected = false;
+    if (q.isContext) {
+      isSelected = answers[currentQ] === opt.hours;
+    } else {
+      isSelected = answers[currentQ] === opt.value;
+    }
+
+    const div = document.createElement('div');
+    div.className = 'option' + (isSelected ? ' selected' : '');
+    div.innerHTML = `<div class="opt-dot"></div><span class="opt-text">${opt.text}</span>`;
+    div.addEventListener('click', () => {
+      const val = q.isContext ? opt.hours : opt.value;
+      selectOption(val);
+    });
+    container.appendChild(div);
+  });
+
+  // Next button
+  const btnNext = document.getElementById('btn-next');
+  btnNext.disabled = answers[currentQ] === null;
+  btnNext.textContent = currentQ === total - 1 ? 'Ver mi resultado →' : 'Siguiente →';
+
+  updateProgress();
+}
+
+function selectOption(val) {
+  answers[currentQ] = val;
+
+  // Re-render options to update selection state
+  const q = QUESTIONS[currentQ];
+  document.querySelectorAll('.option').forEach((el, i) => {
+    const opt = q.options[i];
+    const optVal = q.isContext ? opt.hours : opt.value;
+    el.classList.toggle('selected', optVal === val);
+  });
+
+  document.getElementById('btn-next').disabled = false;
+}
+
+function nextQuestion() {
+  if (answers[currentQ] === null) return;
+
+  // If this is the context question, save work hours
+  if (QUESTIONS[currentQ].isContext) {
+    workHours = answers[currentQ];
+  }
+
+  if (currentQ < QUESTIONS.length - 1) {
+    currentQ++;
+    // Smooth transition
+    const scr = document.getElementById('screen-questions');
+    scr.style.transition = 'opacity .18s ease, transform .18s ease';
+    scr.style.opacity = '0';
+    scr.style.transform = 'translateY(5px)';
+    setTimeout(() => {
+      renderQuestion();
+      scr.style.opacity = '1';
+      scr.style.transform = 'translateY(0)';
+    }, 180);
+  } else {
+    showResults();
+  }
+}
+
+function updateProgress() {
+  const pct = ((currentQ + 1) / QUESTIONS.length) * 100;
+  document.getElementById('progress-bar').style.width = pct + '%';
+}
+
+/* ══════════════════════════════════════════════════════════
+   SCORING
+══════════════════════════════════════════════════════════ */
+
+function calculateResults() {
+  // Sum only scored (non-context) questions
+  let totalPoints = 0;
+  const blockScores = [0, 0, 0, 0];
+
+  QUESTIONS.forEach((q, i) => {
+    if (q.isContext) return;
+    const pts = answers[i] ?? 0;
+    totalPoints += pts;
+    blockScores[q.block] += pts;
+  });
+
+  // Final percentage (capped 18–60)
+  let finalPct = Math.round((totalPoints / 48) * 60);
+  finalPct = Math.max(18, Math.min(60, finalPct));
+
+  // Hours lost calculation
+  const pctLost   = 100 - finalPct;
+  const hDay      = +(workHours * (pctLost / 100)).toFixed(1);
+  const hWeek     = +(hDay * 5).toFixed(1);
+  const hMonth    = +(hDay * 22).toFixed(1);
+
+  // Classify each block
+  const classified = blockScores.map((score, blockId) => {
+    let severity;
+    if (score <= 4)      severity = 'critical';
+    else if (score <= 8) severity = 'improvable';
+    else                 severity = 'functional';
+    return { blockId, score, severity };
+  });
+
+  // Sort: lowest score first, tiebreak by TIEBREAKER priority
+  classified.sort((a, b) => {
+    if (a.score !== b.score) return a.score - b.score;
+    return TIEBREAKER.indexOf(a.blockId) - TIEBREAKER.indexOf(b.blockId);
+  });
+
+  const worst3 = classified.slice(0, 3);
+
+  return { finalPct, hDay, hWeek, hMonth, worst3 };
+}
+
+/* ══════════════════════════════════════════════════════════
+   RESULTS RENDERING
+══════════════════════════════════════════════════════════ */
+
+function showResults() {
+  const { finalPct, hDay, hWeek, hMonth, worst3 } = calculateResults();
+
+  // Score
+  document.getElementById('r-pct').textContent      = finalPct;
+  document.getElementById('r-headline').textContent = finalPct;
+
+  // Hours lost
+  document.getElementById('h-day').textContent   = hDay;
+  document.getElementById('h-week').textContent  = hWeek;
+  document.getElementById('h-month').textContent = hMonth;
+  document.getElementById('h-reflection').innerHTML =
+    `Imagina qué podrías construir, delegar o avanzar si recuperases esas <strong>${hMonth} horas al mes</strong>. Eso no es motivación — es lo que vale optimizar tu biología.`;
+
+  // Problems
+  const list = document.getElementById('problems-list');
+  list.innerHTML = '';
+
+  worst3.forEach(({ blockId, severity }) => {
+    if (severity === 'functional') return;
+    const blk  = BLOCKS[blockId];
+    const text = PROBLEM_TEXT[blockId][severity];
+    const card = document.createElement('div');
+    card.className = `problem-card ${severity}`;
+    card.innerHTML = `
+      <div class="problem-head">
+        <div class="problem-icon">${blk.icon}</div>
+        <span class="problem-name">${blk.name}</span>
+        <span class="problem-badge badge-${severity}">
+          ${severity === 'critical' ? 'Área crítica' : 'Mejorable'}
+        </span>
+      </div>
+      <p class="problem-text">${text}</p>
+    `;
+    list.appendChild(card);
+  });
+
+  // Fallback if somehow all functional
+  if (!list.children.length) {
+    list.innerHTML = `<p style="color:var(--subtle);font-size:14px;line-height:1.7;">
+      Tu entorno hormonal base está razonablemente bien. Hay margen de optimización en cada bloque —
+      consulta con el equipo para llevar cada área al siguiente nivel.
+    </p>`;
+  }
+
+  // Show screen
+  showScreen('screen-results');
+  document.getElementById('progress-wrap').style.display = 'none';
+  document.getElementById('header-tag').textContent = 'Tu resultado';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+</script>
+</body>
+</html>
